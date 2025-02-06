@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   kafka-net:
     driver: bridge
@@ -35,21 +33,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # zookeeper:
-  #   image: bitnami/zookeeper:latest
-  #   container_name: zookeeper
-  #   networks:
-  #     - kafka-net
-  #   environment:
-  #     ALLOW_ANONYMOUS_LOGIN: "yes"
-
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
     networks:
       - kafka-net
-    # depends_on:
-    #   - zookeeper
     environment:
       KAFKA_CFG_NODE_ID: "1"
       KAFKA_CFG_PROCESS_ROLES: "broker,controller"
@@ -57,17 +45,12 @@ services:
       KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
-      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"  
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "1" 
       KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
       KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_CFG_LOG_DIRS: "/bitnami/kafka/logs"
       ALLOW_PLAINTEXT_LISTENER: "yes"
-      # KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      # KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      # KAFKA_BROKER_ID: 1
-      # KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      # ALLOW_PLAINTEXT_LISTENER: "yes"
     ports:
       - "9092:9092"
     volumes:
@@ -78,6 +61,35 @@ services:
       timeout: 10s
       retries: 5
 
+  kafka-connect:
+    # image: confluentinc/cp-kafka-connect:latest
+    image: confluentinc/cp-kafka-connect-base:latest
+    container_name: kafka-connect
+    networks:
+      - kafka-net
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_GROUP_ID: "kafka-connect-group"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_PLUGIN_PATH: "/usr/share/java"
+      CONNECT_REST_PORT: 8083
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+
   carga-service:
     build: ./carga-service
     container_name: carga-service
@@ -85,9 +97,9 @@ services:
       - kafka-net
     depends_on:
       cassandra:
-        condition: service_healthy 
-      kafka: 
-        condition: service_healthy 
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     ports:
       - "8000:8000"
 
@@ -97,10 +109,10 @@ services:
     networks:
       - kafka-net
     depends_on:
-      kafka: 
+      kafka:
         condition: service_healthy
       postgres:
-        condition: service_started 
+        condition: service_started
     ports:
       - "3000:3000"
 

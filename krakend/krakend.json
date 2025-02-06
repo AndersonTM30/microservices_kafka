@@ -13,6 +13,16 @@
                     ]
                 }
             ]
-        }
+        },
+        {
+            "endpoint": "/connectors",
+            "method": "POST",
+            "backend": [
+              {
+                "url_pattern": "/connectors",
+                "host": ["http://kafka-connect:8083"]
+              }
+            ]
+          }
     ]
 }

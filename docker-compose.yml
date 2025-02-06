@@ -1,0 +1,119 @@
+version: '3.8'
+
+networks:
+  kafka-net:
+    driver: bridge
+
+services:
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra-db
+    networks:
+      - kafka-net
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres-db
+    networks:
+      - kafka-net
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # zookeeper:
+  #   image: bitnami/zookeeper:latest
+  #   container_name: zookeeper
+  #   networks:
+  #     - kafka-net
+  #   environment:
+  #     ALLOW_ANONYMOUS_LOGIN: "yes"
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    networks:
+      - kafka-net
+    # depends_on:
+    #   - zookeeper
+    environment:
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+      KAFKA_CFG_LISTENERS: "PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      # KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      # KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # KAFKA_BROKER_ID: 1
+      # KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # ALLOW_PLAINTEXT_LISTENER: "yes"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  carga-service:
+    build: ./carga-service
+    container_name: carga-service
+    networks:
+      - kafka-net
+    depends_on:
+      cassandra:
+        condition: service_healthy 
+      kafka: 
+        condition: service_healthy 
+    ports:
+      - "8000:8000"
+
+  sync-service:
+    build: ./sync-service
+    container_name: sync-service
+    networks:
+      - kafka-net
+    depends_on:
+      kafka: 
+        condition: service_healthy
+      postgres:
+        condition: service_started 
+    ports:
+      - "3000:3000"
+
+  krakend:
+    image: devopsfaith/krakend
+    networks:
+      - kafka-net
+    volumes:
+      - ./krakend/krakend.json:/etc/krakend/krakend.json
+    ports:
+      - "8080:8080"
+
+volumes:
+  cassandra_data:
+  postgres_data:
+  kafka_data:

@@ -1,0 +1,18 @@
+{
+    "version": 3,
+    "name": "Microservices Gateway",
+    "endpoints": [
+        {
+            "endpoint": "/carga",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/carga",
+                    "host": [
+                        "http://carga-service:8000"
+                    ]
+                }
+            ]
+        }
+    ]
+}

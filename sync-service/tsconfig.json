@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "ESNext", // Você mantém o ESNext se precisar usar as importações modernas
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "noEmit": true // Não emitir código JS durante a compilação, pois usaremos o ts-node para isso
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules"]
+}

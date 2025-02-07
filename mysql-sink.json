@@ -1,0 +1,19 @@
+{
+  "name": "mysql-sink-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "postgres-tabela",
+    "connection.url": "jdbc:mysql://mysql-db:3306/mysql-db-sync",
+    "connection.user": "user",
+    "connection.password": "123",
+    "auto.create": "true", 
+    "auto.evolve": "true", 
+    "insert.mode": "insert",
+    "pk.mode": "none",
+    "pk.fields": "id",
+    "batch.size": "1000",
+    "max.retries": "10",
+    "retry.backoff.ms": "5000"
+  }
+}

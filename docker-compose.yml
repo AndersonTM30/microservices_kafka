@@ -40,6 +40,7 @@ services:
       - kafka-net
     environment:
       KAFKA_CFG_NODE_ID: "1"
+      KAFKA_KRAFT_CLUSTER_ID: "4XKkkyTpSEmUIkytWA_pUA"
       KAFKA_CFG_PROCESS_ROLES: "broker,controller"
       KAFKA_CFG_LISTENERS: "PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093"
       KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
@@ -63,7 +64,9 @@ services:
 
   kafka-connect:
     # image: confluentinc/cp-kafka-connect:latest
-    image: confluentinc/cp-kafka-connect-base:latest
+    # image: confluentinc/cp-kafka-connect-base:latest
+    build: 
+      context: ./kafka-connect
     container_name: kafka-connect
     networks:
       - kafka-net
@@ -71,6 +74,7 @@ services:
       CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
       CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
       CONNECT_GROUP_ID: "kafka-connect-group"
+      CONNECT_REST_ADVERTISED_LISTENER: "http://kafka-connect:8083"
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
       CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"

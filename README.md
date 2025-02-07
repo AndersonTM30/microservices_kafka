@@ -155,7 +155,7 @@ Esta aplicação demonstra a integração de microsserviços utilizando diversas
     - **PostgreSQL:**
         - Conecte-se ao container do PostgreSQL (por exemplo, via `psql`):
             ```
-            docker exec -it postgres-db psql -U postgres
+            docker exec -it postgres-db psql -d mydb -U user
             ```
         
         - Crie a tabela:

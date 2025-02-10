@@ -32,6 +32,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  
+  mysql:
+    image: mysql:latest
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: mysql-db-sync
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data_sync:/var/lib/mysql
 
   kafka:
     image: bitnami/kafka:latest
@@ -133,3 +146,4 @@ volumes:
   cassandra_data:
   postgres_data:
   kafka_data:
+  mysql_data_sync:

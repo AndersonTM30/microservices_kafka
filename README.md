@@ -134,8 +134,22 @@ Esta aplicação demonstra a integração de microsserviços utilizando diversas
     git clone https://github.com/AndersonTM30/microservices_kafka.git
     cd microservices_kafka
     ```
+
+2. **Iniciar os Containers:**
     
-2. **Configuração Inicial do Cassandra e PostgreSQL:**
+    Execute o comando a partir da raiz do repositório onde se encontra o `docker-compose.yml`:
+    
+    ```bash
+    docker-compose up --build
+    ```
+    
+    Esse comando:
+    
+    - Constrói as imagens dos serviços `carga-service` e `sync-service`.
+    - Inicializa os containers para Cassandra, PostgreSQL, Kafka, Kafka Connect e KrakenD.
+    - Garante que os serviços dependentes iniciem somente após a saúde (healthcheck) dos serviços críticos (por exemplo, Kafka e Cassandra).        
+
+3. **Configuração Inicial do Cassandra e PostgreSQL:**
     - **Cassandra:**
         - Após iniciar o container, conecte-se ao Cassandra (por exemplo, utilizando o `cqlsh`):
         
@@ -162,24 +176,11 @@ Esta aplicação demonstra a integração de microsserviços utilizando diversas
             
             ```sql
             CREATE TABLE tabela (
-              id PRIMARY KEY,
+              id int PRIMARY KEY,
               valor text
             );
             ```
             
-3. **Iniciar os Containers:**
-    
-    Execute o comando a partir da raiz do repositório onde se encontra o `docker-compose.yml`:
-    
-    ```bash
-    docker-compose up --build
-    ```
-    
-    Esse comando:
-    
-    - Constrói as imagens dos serviços `carga-service` e `sync-service`.
-    - Inicializa os containers para Cassandra, PostgreSQL, Kafka, Kafka Connect e KrakenD.
-    - Garante que os serviços dependentes iniciem somente após a saúde (healthcheck) dos serviços críticos (por exemplo, Kafka e Cassandra).
 4. **Configurar os Conectores do Kafka Connect:**
     
     Após os containers estarem rodando, utilize o KrakenD para enviar as configurações dos conectores via API. Por exemplo, para criar o conector de fonte:
